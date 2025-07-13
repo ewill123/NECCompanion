@@ -1,0 +1,50 @@
+{
+  "welcome": "Bo kɛ NEC Companion 🇱🇷",
+  "intro": "Wɔ lɔgbɔ lɛyɛnɛ fɛ kɛɛ ɛlɛkshɔn.",
+  "next": "Kɔli",
+  "language_prompt": "Pɔɔ yɔɔ lɛyɛŋ gbɔŋɔ",
+  "language_prompt_subtitle": "Pɔɔ yɛ yɔɔ kɛ lɛyɛnɛɛ fɛ lɔɔ.",
+  "english": "English",
+  "kpelle": "Kpɛlɛ",
+  "permissions_title": "Tɔɔ Location ni Notifikɛshɔn",
+  "permissions_subtitle": "Mɔɔ tɔɔ lɔɔ sɔɛ lɛɛ gbɛ yɔɔ nɛɛnɛɛ ɛ ni gbɔɔ tii lɔ lɔ.",
+  "finish": "Fɛnisɛ",
+  "home": "Fɛ Kpɛ Naa",
+  "education": "Boɔ fɔlɛ kuraa",
+  "report_issue": "Yɛli suɛ jɔɔ",
+  "reset_onboarding": "Gboɔ yala fɔlɛ kuraa",
+  "education_header": "Kpɛlɛ ni ɓaa ɛlɛkshɔn",
+  "education_intro": "Kɛɛ ɔnɛ kɛɛ nɛɛnɛɛ gbɔŋɔ fɛ ɓɛɛlɛ ni ɛlɛkshɔn gɔmɔ.",
+
+  "voter_rights": "Lɛyɛnɛɛ Kɔlɔɔ",
+  "voter_rights_brief": "Yɔɔ sɛnɛɛ lɛyɛnɛɛ kɔlɔɔ fɛ lɔɔ yɔɔ kɛɛ ɓɔɛnɛɛ kɛɛ sɛɛ ɛlɛkshɔn ɓɛɛnɛɛ gbɔɔ.",
+  "voter_rights_details": "Lɛyɛnɛɛ kɔlɔɔ kɛɛ:\n- Pɔɔ yɛ nɔɔ ni ɓɔɛnɛɛ ni yɛnɛɛ ɛlɛkshɔn fɛ\n- Pɔɔ yɛ ɓɛɛlɛ kɛɛ wɔtɛ gbɔŋɔ sɛkɛɛ\n- Fɛnɛɛ yɛ ɓɔɔ ɓɛɛlɛ kɛɛ yɔɔ yɛ kɛbɛɛ\n- Yɔɔ nɔɔ wɔɔrɛɛ fɛ gbɛɛɛ kɛɛ lɔɔ\n\nLɛyɛnɛɛ kɔlɔɔ yɛ sɛnɛɛ fɛ Liberian Constitution ni NEC gbɛɛ.",
+
+  "how_to_vote": "Nɔɔ kɛɛ ɓɔɛnɛɛ",
+  "how_to_vote_brief": "Kɔ nɛɛnɛɛ ni wɔɔnɛɛ ɓɔɛnɛɛ kɛɛ kɛɛ ɛlɛkshɔn lɛɛ ni pɔɔ yɛ gbɔŋɔ kɛɛ gbɛɛ.",
+  "how_to_vote_details": "Nɔɔ kɛɛ ɓɔɛnɛɛ kɛɛ:\n1. Tɛɛnɛɛ voter ID lɔ polling fɛ\n2. Pɔɔ yɛ lɔɔ lɛyɛnɛɛ gbɔŋɔ\n3. Fɔɔrɛɛ ballot paper\n4. Pɔɔ yɛ ɓɛɛlɛ ni pɛɛ jɔɔ\n5. Fɔɔrɛɛ ballot nɔɔ ni pɔɔ yɛ tɔɔ lɔ\n\nNɔɔ kɛɛ ɓɔɛnɛɛ yɛ sɛkɛɛ ni sɛɛ.",
+
+  "election_tips": "Kɛ yɔɔ ɛlɛkshɔn gɔɔni",
+  "election_tips_brief": "Wɔ gɔɔni fɛ yɔɔ sɛnɛɛ ɛlɛkshɔn kɛɛ tii ni nɛɛti lɛɛ.",
+  "election_tips_details": "Kɛ yɔɔ ɛlɛkshɔn gɔɔni kɛɛ:\n- Yɔɔ yɛ polling fɛ gbɛɛ\n- Tɔɔ voter ID sɛkɛɛ\n- Nɔɔ wɔɔrɛɛ lɛyɛnɛɛ ɓɛɛnɛɛ\n- Yɛli suɛ jɔɔ lɔ NEC yɛlɛ\n- Kɔɔlɛɛ sɛɛ ni nɔɔ\n\nYɔɔ ɓɔɔ yɛ sɛkɛɛ.",
+
+  "how_ballots_work": "Nɔɔ kɛɛ ballots",
+  "how_ballots_work_brief": "Kɛɛ nɔɔ kɛɛ ballots kɛɛ fɛɛlɛ ni yɛlɛ.",
+  "how_ballots_work_details": "Ballots yɛ:\n- Lɛyɛnɛɛ yɛlɛ, fɛɛlɛ, ni foto\n- Ni sɔɔ ni yɛ kɛ thumbprint\n\nYɔɔ sɛnɛɛ:\n- Pɔɔ yɛ single thumbprint\n- Nɔɔ yɛ overlapping\n- Fɔɔlɛɛ ballot sɛkɛɛ\n- Yɛlɛ lɔ ballot box\n\nBallots ɓɛɛnɛɛ yɛ lɔɔ.",
+
+  "role_of_nec": "NEC ɣaɔ",
+  "role_of_nec_brief": "NEC yɛ ni yɛlɛ kɛɛ.",
+  "role_of_nec_details": "NEC ɣaɔ kɛɛ:\n- Ɓɛɛlɛ ɛlɛkshɔn\n- Kɛlɛ yɔɔ sɛnɛɛ\n- Sɔɔlɛɛ ɛlɛkshɔn result\n- Yɛli suɛ jɔɔ\n- Kɛ yɔɔ ɛlɛkshɔn yɛ sɛkɛɛ ni ɓɛɛlɛ",
+
+  "tap_to_expand": "Pɔɔ ɓɛɛlɛ ▼",
+  "tap_to_collapse": "Pɔɔ gbiɛlɛ ▲",
+  "card_label": "Kɛlɛ",
+
+  "report_issue_header": "Yɛli suɛ jɔɔ",
+  "title_placeholder": "Sɔlɔɛ ni suɛ",
+  "description_placeholder": "Fɛnɛɛ suɛ nɛɛɛ...",
+  "submit": "Kɛli",
+  "thank_you": "Mɔɔni kɛɛ yɛli suɛ. Bɛɛ tii jɔɔ yɛ gbɛɛnɛɛ.",
+  "error": "Ɣaɔ",
+  "fill_required_fields": "Sɔɔ yɛ ni gbɔŋɔ wɔ suɛ"
+}
