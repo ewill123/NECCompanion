@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,9 +7,6 @@ import {
   Alert,
   ScrollView,
   Image,
-  Linking,
-  Animated,
-  Dimensions,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { saveOnboardingComplete } from "../utils/storage";
@@ -17,341 +14,289 @@ import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import Entypo from "react-native-vector-icons/Entypo";
 
-const { width } = Dimensions.get("window");
-
 export default function HomeScreen({ navigation }: { navigation: any }) {
   const { t } = useTranslation();
 
-  const scrollX = useRef(new Animated.Value(0)).current;
-  const iconScale = useRef(new Animated.Value(1)).current;
-
+  const [newsIndex, setNewsIndex] = useState(0);
   const newsItems = [
     "Liberia prepares for upcoming by-election on August 15.",
     "NEC announces voter registration deadline extension.",
     "Stay safe and informed: Follow NEC official guidelines.",
   ];
 
-  const newsTickerText = new Array(3)
-    .fill(newsItems.join("   •   "))
-    .join("   •   ");
-  const tickerTextWidth = newsTickerText.length * 9;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.timing(scrollX, {
-        toValue: -tickerTextWidth,
-        duration: 60000,
-        useNativeDriver: true,
-        isInteraction: false,
-      })
-    ).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(iconScale, {
-          toValue: 1.05,
-          duration: 1800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(iconScale, {
-          toValue: 1,
-          duration: 1800,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, [scrollX, tickerTextWidth, iconScale]);
+  const handleNextNews = () => {
+    setNewsIndex((prev) => (prev + 1) % newsItems.length);
+  };
 
   const handleResetOnboarding = async () => {
     await saveOnboardingComplete();
     Alert.alert(
-      t("reset_done_title") ?? "Restarted",
-      t("reset_done_message") ?? "Onboarding has been reset."
+      t("reset_done_title") ?? "Setup Restarted",
+      t("reset_done_message") ?? "You will be redirected to setup."
     );
     navigation.reset({ index: 0, routes: [{ name: "Welcome" }] });
   };
 
-  const voterStats = [
+  const actionCards = [
     {
-      id: "registered",
-      icon: <FontAwesome5 name="users" size={28} color="#1e3a8a" />,
-      value: "2,400,000",
-      label: "Registered voters in Liberia (2023)",
-      bg: "#e0f2fe",
+      id: "education",
+      icon: <FontAwesome5 name="book-open" size={28} color="#a16207" />,
+      label: t("education"),
+      bg: "#fef3c7",
+      onPress: () => navigation.navigate("Education"),
+      style: {},
+      textColor: "#92400e",
     },
     {
-      id: "votes_cast",
-      icon: <MaterialIcons name="how-to-vote" size={28} color="#065f46" />,
-      value: "1,700,000",
-      label: "Total votes cast nationwide (2023)",
+      id: "report",
+      icon: <MaterialIcons name="report-problem" size={28} color="#b91c1c" />,
+      label: t("report_issue"),
+      bg: "#fee2e2",
+      onPress: () => navigation.navigate("ReportIssue"),
+      style: {
+        borderWidth: 2,
+        borderColor: "#b91c1c",
+        shadowColor: "#b91c1c",
+        shadowOpacity: 0.6,
+        shadowRadius: 8,
+        elevation: 10,
+      },
+      textColor: "#991b1b",
+    },
+    {
+      id: "pollingCenters",
+      icon: <MaterialIcons name="location-city" size={28} color="#1e40af" />,
+      label: t("polling_centers") ?? "Polling Centers",
+      bg: "#dbeafe",
+      onPress: () => navigation.navigate("PollingCenters"),
+      style: {},
+      textColor: "#1e3a8a",
+    },
+    {
+      id: "knowCandidate",
+      icon: <FontAwesome5 name="user-tie" size={28} color="#047857" />,
+      label: t("know_candidate") ?? "Know Your Candidate",
       bg: "#d1fae5",
-    },
-  ];
-
-  const socialLinks = [
-    {
-      id: "website",
-      icon: <Entypo name="globe" size={30} color="#2563eb" />,
-      url: "https://nec-liberia.org",
-      label: "NEC Website",
-    },
-    {
-      id: "facebook",
-      icon: <Entypo name="facebook" size={30} color="#2563eb" />,
-      url: "https://facebook.com/NECLiberia",
-      label: "Facebook",
-    },
-    {
-      id: "twitter",
-      icon: <Entypo name="twitter" size={30} color="#1DA1F2" />,
-      url: "https://twitter.com/NECLiberia",
-      label: "Twitter",
+      onPress: () => navigation.navigate("KnowCandidate"),
+      style: {},
+      textColor: "#065f46",
     },
   ];
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
-    >
-      <View style={styles.logoContainer}>
+    <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+      {/* Top bar with Profile icon in top-right */}
+      <View style={styles.topBar}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Profile")}
+          accessibilityRole="button"
+          accessibilityLabel="Profile"
+          style={styles.profileIconContainer}
+        >
+          <Entypo name="user" size={28} color="#1e293b" />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
         <Image
           source={require("../assets/NEC.jpeg")}
-          style={styles.logo}
+          style={styles.heroImage}
           resizeMode="contain"
         />
-      </View>
 
-      {/* Voter Stats with Colored Cards */}
-      <View style={styles.statsRow}>
-        {voterStats.map(({ id, icon, value, label, bg }) => (
-          <View key={id} style={[styles.statCard, { backgroundColor: bg }]}>
-            <Animated.View style={{ transform: [{ scale: iconScale }] }}>
-              {icon}
-            </Animated.View>
-            <Text style={styles.statValue}>{value}</Text>
-            <Text style={styles.statLabel}>{label}</Text>
-          </View>
-        ))}
-      </View>
+        <Text style={styles.headerTitle}>National Elections Commission</Text>
+        <Text style={styles.headerSubtitle}>Liberia Companion App</Text>
 
-      {/* News Ticker */}
-      <View style={styles.newsTickerContainer}>
-        <Animated.Text
-          style={[
-            styles.newsTickerText,
-            { transform: [{ translateX: scrollX }] },
-          ]}
-          numberOfLines={1}
-          ellipsizeMode="clip"
-        >
-          {newsTickerText}
-        </Animated.Text>
-      </View>
-
-      {/* Action Buttons */}
-      <TouchableOpacity
-        style={[styles.button, styles.educationButton]}
-        onPress={() => navigation.navigate("Education")}
-      >
-        <FontAwesome5
-          name="book-open"
-          size={22}
-          color="#fff"
-          style={styles.buttonIcon}
-        />
-        <Text style={styles.buttonText}>{t("education")}</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.button, styles.reportButton]}
-        onPress={() => navigation.navigate("ReportIssue")}
-      >
-        <MaterialIcons
-          name="report-problem"
-          size={22}
-          color="#fff"
-          style={styles.buttonIcon}
-        />
-        <Text style={styles.buttonText}>{t("report_issue")}</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.button, styles.resetButton]}
-        onPress={handleResetOnboarding}
-      >
-        <Entypo
-          name="warning"
-          size={22}
-          color="#fff"
-          style={styles.buttonIcon}
-        />
-        <Text style={styles.buttonText}>⚠️ {t("reset_onboarding")}</Text>
-      </TouchableOpacity>
-
-      {/* Social Icons */}
-      <View style={styles.socialLinksContainer}>
-        {socialLinks.map(({ id, icon, url, label }) => (
-          <TouchableOpacity
-            key={id}
-            onPress={() => Linking.openURL(url)}
-            style={styles.socialIconButton}
+        <View style={styles.newsCard}>
+          <Text style={styles.sectionTitle}>Latest NEC News</Text>
+          <Text
+            style={styles.newsTickerText}
+            accessibilityRole="text"
+            accessibilityLabel={`News update: ${newsItems[newsIndex]}`}
           >
-            <Animated.View style={{ transform: [{ scale: iconScale }] }}>
-              {icon}
-            </Animated.View>
-          </TouchableOpacity>
-        ))}
-      </View>
+            📰 {newsItems[newsIndex]}
+          </Text>
+          {newsItems.length > 1 && (
+            <TouchableOpacity
+              onPress={handleNextNews}
+              style={styles.nextNewsButton}
+              accessibilityRole="button"
+              accessibilityLabel="Next news item"
+            >
+              <Text style={styles.nextNewsText}>Next</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
-      {/* Footer */}
-      <View style={styles.footer}>
-        <TouchableOpacity onPress={() => navigation.navigate("Support")}>
-          <Text style={styles.helpButtonText}>Need Help?</Text>
-        </TouchableOpacity>
-        <Text style={styles.versionText}>NEC Companion App v1.0.0 © 2025</Text>
-      </View>
-    </ScrollView>
+        <View style={styles.actionsRow}>
+          {actionCards.map(
+            ({ id, icon, label, bg, onPress, style, textColor }) => (
+              <TouchableOpacity
+                key={id}
+                style={[styles.cardButton, { backgroundColor: bg }, style]}
+                onPress={onPress}
+                accessibilityRole="button"
+                accessibilityLabel={label}
+              >
+                {icon}
+                <Text
+                  style={[
+                    styles.cardButtonText,
+                    { color: textColor },
+                    id === "report" ? { fontWeight: "900" } : {},
+                  ]}
+                >
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            )
+          )}
+
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={handleResetOnboarding}
+            accessibilityRole="button"
+            accessibilityLabel="Restart Setup"
+          >
+            <MaterialIcons name="logout" size={22} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>NEC Companion App v1.0.0 © 2025</Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  topBar: {
+    width: "100%",
+    height: 60,
+    backgroundColor: "#f8fafc",
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+  },
+  profileIconContainer: {
+    padding: 8,
+  },
   container: {
     flexGrow: 1,
-    paddingVertical: 30,
-    paddingHorizontal: 28,
-    backgroundColor: "#f0f4f8",
+    paddingHorizontal: 20,
+    paddingTop: 10,
     alignItems: "center",
-    paddingTop: 110,
   },
-  logoContainer: {
-    position: "absolute",
-    top: 40,
-    left: 28,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    overflow: "hidden",
-    borderWidth: 2,
-    borderColor: "#2563eb",
-    backgroundColor: "#fff",
-    elevation: 6,
-    zIndex: 20,
+  heroImage: {
+    width: 90,
+    height: 90,
+    marginBottom: 16,
+    borderRadius: 18,
   },
-  logo: {
-    width: "100%",
-    height: "100%",
-  },
-  statsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    marginBottom: 36,
-  },
-  statCard: {
-    flex: 1,
-    paddingVertical: 22,
-    marginHorizontal: 10,
-    borderRadius: 16,
-    alignItems: "center",
-    shadowColor: "#1e40af",
-    shadowOpacity: 0.15,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 7 },
-    elevation: 6,
-  },
-  statValue: {
+  headerTitle: {
     fontSize: 22,
     fontWeight: "900",
     color: "#1e293b",
-    marginTop: 10,
-    letterSpacing: 0.5,
   },
-  statLabel: {
-    fontSize: 13,
-    color: "#475569",
-    marginTop: 6,
-    textAlign: "center",
+  headerSubtitle: {
+    fontSize: 16,
     fontWeight: "600",
+    color: "#64748b",
+    marginBottom: 30,
   },
-  newsTickerContainer: {
+  newsCard: {
+    backgroundColor: "#e0f2fe",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 16,
     width: "100%",
-    height: 36,
-    backgroundColor: "#dbeafe",
-    borderRadius: 20,
-    overflow: "hidden",
-    marginBottom: 40,
-    justifyContent: "center",
-    paddingHorizontal: 14,
+    marginBottom: 30,
     borderWidth: 1,
-    borderColor: "#93c5fd",
+    borderColor: "#bae6fd",
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#1e40af",
+    marginBottom: 8,
   },
   newsTickerText: {
-    fontSize: 15,
+    fontSize: 14,
     color: "#2563eb",
+    fontWeight: "600",
+  },
+  nextNewsButton: {
+    alignSelf: "flex-end",
+    marginTop: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    backgroundColor: "#bae6fd",
+  },
+  nextNewsText: {
+    fontSize: 13,
+    color: "#1e40af",
     fontWeight: "700",
   },
-  button: {
+  actionsRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
     width: "100%",
-    paddingVertical: 18,
-    borderRadius: 32,
-    marginVertical: 12,
+    rowGap: 14,
+    marginBottom: 30,
+  },
+  cardButton: {
+    width: "48%",
+    aspectRatio: 1,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
+    padding: 14,
     elevation: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
-  buttonIcon: {
-    marginRight: 12,
+  cardButtonText: {
+    marginTop: 10,
+    fontSize: 15,
+    textAlign: "center",
   },
-  educationButton: {
-    backgroundColor: "#22c55e",
-  },
-  reportButton: {
-    backgroundColor: "#3b82f6",
-  },
-  resetButton: {
-    backgroundColor: "#ef4444",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "700",
-    letterSpacing: 0.5,
-  },
-  socialLinksContainer: {
-    flexDirection: "row",
+  logoutButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#0f172a",
+    alignItems: "center",
     justifyContent: "center",
-    marginTop: 30,
-    marginBottom: 20,
-  },
-  socialIconButton: {
-    marginHorizontal: 18,
-    padding: 8,
-    borderRadius: 36,
-    backgroundColor: "#f0f9ff",
-    elevation: 5,
+    alignSelf: "center",
+    marginTop: 14,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
   footer: {
-    width: "100%",
-    alignItems: "center",
     borderTopWidth: 1,
     borderTopColor: "#cbd5e1",
-    paddingVertical: 16,
-    marginBottom: 10,
+    paddingTop: 16,
+    paddingBottom: 24,
   },
-  helpButtonText: {
-    color: "#3b82f6",
-    fontWeight: "700",
-    fontSize: 17,
-    marginBottom: 6,
-  },
-  versionText: {
+  footerText: {
     fontSize: 13,
     color: "#94a3b8",
   },

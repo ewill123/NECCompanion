@@ -7,11 +7,12 @@ import {
   Alert,
   ActivityIndicator,
   Animated,
+  Platform,
 } from "react-native";
 import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
 import { saveOnboardingComplete } from "../../utils/storage";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 
 export default function PermissionsStep({ navigation }: { navigation: any }) {
   const [hasLocationPermission, setHasLocationPermission] = useState<
@@ -21,17 +22,14 @@ export default function PermissionsStep({ navigation }: { navigation: any }) {
     boolean | null
   >(null);
   const [loading, setLoading] = useState(false);
-
-  // Animation for fade in on mount
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 600,
+      duration: 700,
       useNativeDriver: true,
     }).start();
-
     requestPermissions();
   }, []);
 
@@ -49,11 +47,11 @@ export default function PermissionsStep({ navigation }: { navigation: any }) {
       if (locationStatus !== "granted" || notificationStatus !== "granted") {
         Alert.alert(
           "Permissions Required",
-          "Please grant location and notification permissions to continue."
+          "Please allow both permissions to continue."
         );
       }
-    } catch {
-      Alert.alert("Error", "Failed to request permissions. Please try again.");
+    } catch (err) {
+      Alert.alert("Error", "Unable to request permissions. Try again.");
     } finally {
       setLoading(false);
     }
@@ -62,11 +60,12 @@ export default function PermissionsStep({ navigation }: { navigation: any }) {
   const handleFinish = async () => {
     if (!hasLocationPermission || !hasNotificationPermission) {
       Alert.alert(
-        "Permissions Missing",
-        "Please allow both permissions to proceed."
+        "Permissions Incomplete",
+        "You need to allow both permissions to continue."
       );
       return;
     }
+
     await saveOnboardingComplete();
     navigation.reset({
       index: 0,
@@ -74,72 +73,80 @@ export default function PermissionsStep({ navigation }: { navigation: any }) {
     });
   };
 
-  const renderPermissionStatus = (granted: boolean | null, label: string) => {
-    if (granted === null) {
-      return (
-        <View style={styles.statusRow}>
-          <ActivityIndicator size="small" color="#2563eb" />
-          <Text style={[styles.statusText, { color: "#94a3b8" }]}>
-            {label}: Checking...
-          </Text>
-        </View>
-      );
-    }
-    return (
-      <View style={styles.statusRow}>
-        <MaterialIcons
-          name={granted ? "check-circle" : "cancel"}
+  const renderPermissionStatus = (
+    granted: boolean | null,
+    label: string,
+    icon: keyof typeof Ionicons.glyphMap
+  ) => (
+    <View style={styles.statusRow}>
+      {granted === null ? (
+        <ActivityIndicator size="small" color="#60a5fa" />
+      ) : (
+        <Ionicons
+          name={granted ? "checkmark-circle" : "close-circle"}
           size={26}
           color={granted ? "#10b981" : "#ef4444"}
         />
-        <Text
-          style={[
-            styles.statusText,
-            { color: granted ? "#10b981" : "#ef4444" },
-          ]}
-        >
-          {label}: {granted ? "Granted" : "Denied"}
-        </Text>
-      </View>
-    );
-  };
+      )}
+      <Text
+        style={[
+          styles.statusText,
+          {
+            color:
+              granted === null ? "#94a3b8" : granted ? "#10b981" : "#ef4444",
+          },
+        ]}
+      >
+        {label}:{" "}
+        {granted === null ? "Checking..." : granted ? "Granted" : "Denied"}
+      </Text>
+    </View>
+  );
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <Text style={styles.title}>Enable Location & Notifications</Text>
+      <Text style={styles.title}>Permissions Required</Text>
+      <Text style={styles.subTitle}>
+        We need a few permissions to give you the best experience.
+      </Text>
 
-      {renderPermissionStatus(hasLocationPermission, "Location Permission")}
+      {renderPermissionStatus(
+        hasLocationPermission,
+        "Location",
+        "location-outline"
+      )}
       {renderPermissionStatus(
         hasNotificationPermission,
-        "Notification Permission"
+        "Notifications",
+        "notifications-outline"
       )}
 
       <TouchableOpacity
         style={[
-          styles.button,
+          styles.continueButton,
           !(hasLocationPermission && hasNotificationPermission) &&
             styles.buttonDisabled,
         ]}
         onPress={handleFinish}
         disabled={
-          !(hasLocationPermission && hasNotificationPermission) || loading
+          !hasLocationPermission || !hasNotificationPermission || loading
         }
-        accessibilityLabel="Finish onboarding and proceed"
         activeOpacity={0.85}
       >
         {loading ? (
-          <ActivityIndicator color="#fff" size="small" />
+          <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>Finish</Text>
+          <Text style={styles.continueButtonText}>Finish</Text>
         )}
       </TouchableOpacity>
 
       <TouchableOpacity
         onPress={requestPermissions}
-        style={styles.linkButton}
-        activeOpacity={0.7}
+        style={styles.secondaryButton}
+        activeOpacity={0.8}
       >
-        <Text style={styles.linkText}>Request Permissions Again</Text>
+        <MaterialIcons name="refresh" size={20} color="#2563eb" />
+        <Text style={styles.secondaryButtonText}>Try Again</Text>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -148,57 +155,65 @@ export default function PermissionsStep({ navigation }: { navigation: any }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f172a", // dark navy for app consistency
+    backgroundColor: "#0f172a",
     justifyContent: "center",
     alignItems: "center",
-    padding: 30,
+    paddingHorizontal: 32,
   },
   title: {
     fontSize: 30,
     fontWeight: "900",
-    marginBottom: 40,
-    color: "#e0e7ff", // pastel light blue
+    color: "#e0e7ff",
     textAlign: "center",
+    marginBottom: 12,
+  },
+  subTitle: {
+    fontSize: 16,
+    color: "#cbd5e1",
+    textAlign: "center",
+    marginBottom: 40,
+    lineHeight: 24,
+    paddingHorizontal: 10,
   },
   statusRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 22,
+    gap: 10,
   },
   statusText: {
-    fontSize: 20,
-    marginLeft: 14,
-    fontWeight: "700",
+    fontSize: 18,
+    fontWeight: "600",
   },
-  button: {
+  continueButton: {
     backgroundColor: "#2563eb",
-    paddingVertical: 18,
-    paddingHorizontal: 100,
-    borderRadius: 35,
+    paddingVertical: 16,
+    paddingHorizontal: 60,
+    borderRadius: 30,
     marginTop: 40,
     shadowColor: "#2563eb",
-    shadowOpacity: 0.45,
-    shadowOffset: { width: 0, height: 10 },
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
+  },
+  continueButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "800",
   },
   buttonDisabled: {
     backgroundColor: "#93c5fd",
   },
-  buttonText: {
-    color: "#fff",
-    fontSize: 22,
-    fontWeight: "800",
-    textAlign: "center",
-    letterSpacing: 0.7,
+  secondaryButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 24,
   },
-  linkButton: {
-    marginTop: 30,
-  },
-  linkText: {
-    fontSize: 18,
+  secondaryButtonText: {
     color: "#2563eb",
-    textDecorationLine: "underline",
     fontWeight: "700",
+    fontSize: 16,
   },
 });

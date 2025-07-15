@@ -1,15 +1,16 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  GestureResponderEvent,
   Animated,
+  Platform,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import i18n from "../../localization/i18n";
 import { saveLanguage } from "../../utils/storage";
+import { Picker } from "@react-native-picker/picker";
 
 export default function LanguageSelectStep({
   navigation,
@@ -18,75 +19,69 @@ export default function LanguageSelectStep({
 }) {
   const { t } = useTranslation();
 
-  // Animated scale value for buttons
-  const scaleAnimEn = useRef(new Animated.Value(1)).current;
-  const scaleAnimKpelle = useRef(new Animated.Value(1)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const [selectedLang, setSelectedLang] = useState("en");
 
-  const animatePressIn = (anim: Animated.Value) => {
-    Animated.spring(anim, {
-      toValue: 0.95,
-      friction: 3,
-      tension: 40,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const animatePressOut = (anim: Animated.Value) => {
-    Animated.spring(anim, {
-      toValue: 1,
-      friction: 3,
-      tension: 40,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handleSelect = async (lang: string) => {
-    i18n.changeLanguage(lang);
-    await saveLanguage(lang);
+  const handleSelect = async () => {
+    i18n.changeLanguage(selectedLang);
+    await saveLanguage(selectedLang);
     navigation.navigate("Permissions");
   };
 
-  // Reusable animated button
-  const LanguageButton = ({
-    title,
-    onPress,
-    scaleAnim,
-  }: {
-    title: string;
-    onPress: (event: GestureResponderEvent) => void;
-    scaleAnim: Animated.Value;
-  }) => (
-    <Animated.View style={{ transform: [{ scale: scaleAnim }], width: "80%" }}>
-      <TouchableOpacity
-        style={styles.langButton}
-        activeOpacity={0.7}
-        onPress={onPress}
-        accessibilityRole="button"
-        accessibilityLabel={`Select language ${title}`}
-        testID={`btn-select-lang-${title.toLowerCase()}`}
-        onPressIn={() => animatePressIn(scaleAnim)}
-        onPressOut={() => animatePressOut(scaleAnim)}
-      >
-        <Text style={styles.langButtonText}>{title}</Text>
-      </TouchableOpacity>
-    </Animated.View>
-  );
+  const animatePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.95,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const animatePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{t("language_prompt")}</Text>
       <Text style={styles.subTitle}>{t("language_prompt_subtitle")}</Text>
 
-      <LanguageButton
-        title={t("english")}
-        onPress={() => handleSelect("en")}
-        scaleAnim={scaleAnimEn}
-      />
-      <LanguageButton
-        title={t("kpelle")}
-        onPress={() => handleSelect("kpelle")}
-        scaleAnim={scaleAnimKpelle}
-      />
+      <View style={styles.dropdownContainer}>
+        <Picker
+          selectedValue={selectedLang}
+          onValueChange={(itemValue) => setSelectedLang(itemValue)}
+          mode="dropdown"
+          style={styles.picker}
+          itemStyle={styles.pickerItem}
+        >
+          <Picker.Item label="English" value="en" />
+          <Picker.Item label="Kpelle" value="kpelle" />
+          <Picker.Item label="Bassa" value="bassa" />
+          <Picker.Item label="Gio" value="gio" />
+          <Picker.Item label="Mano" value="mano" />
+          <Picker.Item label="Krahn" value="krahn" />
+          <Picker.Item label="Grebo" value="grebo" />
+          <Picker.Item label="Vai" value="vai" />
+          <Picker.Item label="Lorma" value="lorma" />
+          <Picker.Item label="Kissi" value="kissi" />
+        </Picker>
+      </View>
+
+      <Animated.View
+        style={{ transform: [{ scale: scaleAnim }], width: "80%" }}
+      >
+        <TouchableOpacity
+          style={styles.proceedButton}
+          onPress={handleSelect}
+          activeOpacity={0.85}
+          onPressIn={animatePressIn}
+          onPressOut={animatePressOut}
+          accessibilityLabel="Proceed with selected language"
+        >
+          <Text style={styles.proceedText}>{t("continue") || "Continue"}</Text>
+        </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 }
@@ -94,7 +89,7 @@ export default function LanguageSelectStep({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f172a", // dark navy for consistency
+    backgroundColor: "#0f172a",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 32,
@@ -103,32 +98,47 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "900",
     marginBottom: 8,
-    color: "#e0e7ff", // light pastel blue
+    color: "#e0e7ff",
     textAlign: "center",
   },
   subTitle: {
     fontSize: 18,
-    color: "#a5b4fc", // subtle pastel blue
-    marginBottom: 48,
+    color: "#a5b4fc",
+    marginBottom: 40,
     textAlign: "center",
     lineHeight: 24,
   },
-  langButton: {
-    backgroundColor: "#2563eb",
-    paddingVertical: 18,
-    borderRadius: 30,
-    marginVertical: 12,
-    shadowColor: "#2563eb",
-    shadowOpacity: 0.45,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 15,
-    elevation: 10,
+  dropdownContainer: {
+    width: "90%",
+    backgroundColor: "#e0e7ff",
+    borderRadius: 16,
+    overflow: "hidden",
+    marginBottom: 48,
+    paddingVertical: Platform.OS === "android" ? 0 : 12,
   },
-  langButtonText: {
-    color: "#ffffff",
+  picker: {
+    width: "100%",
+    color: "#1e3a8a",
+  },
+  pickerItem: {
+    fontSize: 18,
+  },
+  proceedButton: {
+    backgroundColor: "#22c55e",
+    paddingVertical: 18,
+    borderRadius: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 10,
+    shadowColor: "#22c55e",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+  },
+  proceedText: {
+    color: "#fff",
     fontWeight: "800",
-    fontSize: 22,
-    textAlign: "center",
-    letterSpacing: 0.8,
+    fontSize: 20,
+    letterSpacing: 1,
   },
 });
