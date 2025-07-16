@@ -4,11 +4,17 @@ export default {
   expo: {
     name: "NECCompanion",
     slug: "neccompanion",
-    version: "1.0.0",
+    version: "2.0.0", // 🔄 Bump version to match your v2 release
     sdkVersion: "53.0.0",
     plugins: ["expo-localization"],
     android: {
-      package: "com.emspire.neccompanion", // ← unique identifier
+      package: "com.emspire.neccompanion",
+    },
+    updates: {
+      url: "https://u.expo.dev/d99c71fb-e33c-4001-8adb-6bbd5a607796", // ✅ Required for EAS Update
+    },
+    runtimeVersion: {
+      policy: "appVersion", // ✅ Match runtime to app version
     },
     extra: {
       SUPABASE_URL: process.env.EXPO_PUBLIC_SUPABASE_URL,
