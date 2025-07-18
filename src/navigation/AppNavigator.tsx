@@ -15,46 +15,52 @@ import SignInScreen from "../screens/auth/SignInScreen";
 import SignUpScreen from "../screens/auth/SignUpScreen";
 
 import { AuthContext } from "../context/AuthContext";
+import { AppConfigProvider } from "../AppConfigContext";
 
 const Stack = createNativeStackNavigator();
 
-export default function AppNavigator({
-  initialRouteName,
-}: {
+interface AppNavigatorProps {
   initialRouteName: string;
-}) {
+}
+
+export default function AppNavigator({ initialRouteName }: AppNavigatorProps) {
   const { user } = useContext(AuthContext);
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName={initialRouteName}
-        screenOptions={{ headerShown: true }}
-      >
-        {/* Public onboarding screens */}
-        <Stack.Screen name="Welcome" component={WelcomeStep} />
-        <Stack.Screen name="LanguageSelect" component={LanguageSelectStep} />
-        <Stack.Screen name="Permissions" component={PermissionsStep} />
+    <AppConfigProvider>
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName={initialRouteName}
+          screenOptions={{ headerShown: true }}
+        >
+          {/* Public onboarding screens */}
+          <Stack.Screen name="Welcome" component={WelcomeStep} />
+          <Stack.Screen name="LanguageSelect" component={LanguageSelectStep} />
+          <Stack.Screen name="Permissions" component={PermissionsStep} />
 
-        {/* Authentication screens */}
-        <Stack.Screen
-          name="SignIn"
-          component={SignInScreen}
-          options={{ title: "Sign In" }}
-        />
-        <Stack.Screen
-          name="SignUp"
-          component={SignUpScreen}
-          options={{ title: "Sign Up" }}
-        />
+          {/* Authentication screens */}
+          <Stack.Screen
+            name="SignIn"
+            component={SignInScreen}
+            options={{ title: "Sign In" }}
+          />
+          <Stack.Screen
+            name="SignUp"
+            component={SignUpScreen}
+            options={{ title: "Sign Up" }}
+          />
 
-        {/* Main app screens */}
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Education" component={EducationScreen} />
-        <Stack.Screen name="ReportIssue" component={ReportIssueScreen} />
-        <Stack.Screen name="PollingCenters" component={PollingCentersScreen} />
-        <Stack.Screen name="KnowCandidate" component={KnowCandidateScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+          {/* Main app screens */}
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Education" component={EducationScreen} />
+          <Stack.Screen name="ReportIssue" component={ReportIssueScreen} />
+          <Stack.Screen
+            name="PollingCenters"
+            component={PollingCentersScreen}
+          />
+          <Stack.Screen name="KnowCandidate" component={KnowCandidateScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </AppConfigProvider>
   );
 }

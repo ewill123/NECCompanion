@@ -6,26 +6,37 @@ import {
   TouchableOpacity,
   Animated,
   Platform,
+  Alert,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import i18n from "../../localization/i18n";
 import { saveLanguage } from "../../utils/storage";
 import { Picker } from "@react-native-picker/picker";
 
+interface LanguageSelectStepProps {
+  navigation: any; // You can replace with proper type if using TypeScript navigation typing
+}
+
 export default function LanguageSelectStep({
   navigation,
-}: {
-  navigation: any;
-}) {
+}: LanguageSelectStepProps) {
   const { t } = useTranslation();
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const [selectedLang, setSelectedLang] = useState("en");
 
   const handleSelect = async () => {
-    i18n.changeLanguage(selectedLang);
-    await saveLanguage(selectedLang);
-    navigation.navigate("Permissions");
+    try {
+      await i18n.changeLanguage(selectedLang);
+      await saveLanguage(selectedLang);
+      navigation.navigate("Permissions");
+    } catch (error) {
+      console.error("Error changing language or saving:", error);
+      Alert.alert(
+        t("error"),
+        t("language_save_failed") || "Failed to save language."
+      );
+    }
   };
 
   const animatePressIn = () => {
@@ -77,7 +88,9 @@ export default function LanguageSelectStep({
           activeOpacity={0.85}
           onPressIn={animatePressIn}
           onPressOut={animatePressOut}
-          accessibilityLabel="Proceed with selected language"
+          accessibilityLabel={
+            t("proceed_with_language") || "Proceed with selected language"
+          }
         >
           <Text style={styles.proceedText}>{t("continue") || "Continue"}</Text>
         </TouchableOpacity>
