@@ -1,47 +1,82 @@
-import React, { createContext, useEffect, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useEffect,
+  useState,
+  ReactNode,
+  useContext,
+} from "react";
 import { supabase } from "../backend/supabase";
-import type { User } from "@supabase/supabase-js";
+import type { User, Session } from "@supabase/supabase-js";
 
+// -----------------
+// Context Interface
+// -----------------
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   signOut: () => Promise<void>;
 }
 
+// -----------------
+// Context Creation
+// -----------------
 export const AuthContext = createContext<AuthContextType>({
   user: null,
+  session: null,
   signOut: async () => {},
 });
 
+// -----------------
+// Auth Provider
+// -----------------
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    // Get initial session on mount
-    supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user ?? null);
-    });
+    // Fetch initial session on mount
+    const fetchSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Error getting session:", error.message);
+      } else {
+        setUser(data.session?.user ?? null);
+        setSession(data.session ?? null);
+      }
+    };
 
-    // Subscribe to auth state changes
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
+    fetchSession();
+
+    // Listen for auth changes
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        setUser(newSession?.user ?? null);
+        setSession(newSession ?? null);
       }
     );
 
-    // Cleanup subscription on unmount
     return () => {
-      listener?.subscription.unsubscribe();
+      subscription.subscription?.unsubscribe();
     };
   }, []);
 
+  // Sign out logic
   const signOut = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Sign out failed:", error.message);
+    }
     setUser(null);
+    setSession(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, signOut }}>
+    <AuthContext.Provider value={{ user, session, signOut }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
+// -----------------
+// Custom Hook (optional)
+export const useAuth = () => useContext(AuthContext);

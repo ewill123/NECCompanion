@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import { supabase } from "../backend/supabase";
-import uuid from "react-native-uuid";
+import { v4 as uuidv4 } from "uuid";
 import { MaterialIcons, Feather } from "@expo/vector-icons";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
@@ -55,7 +55,7 @@ export default function ReportIssueScreen() {
     try {
       const response = await fetch(uri);
       const blob = await response.blob();
-      const uniqueFileName = `${uuid.v4()}_${fileName}`;
+      const uniqueFileName = `${uuidv4()}_${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("attachments")
@@ -82,6 +82,10 @@ export default function ReportIssueScreen() {
       if (result.type === "success") {
         setAttachmentUri(result.uri);
         setAttachmentName(result.name);
+      } else {
+        // User cancelled picking - clear any previous selection
+        setAttachmentUri(null);
+        setAttachmentName(null);
       }
     } catch (err) {
       console.error("Document picking error:", err);
@@ -109,7 +113,7 @@ export default function ReportIssueScreen() {
 
     const { error } = await supabase.from("issues").insert([
       {
-        id: uuid.v4() as string,
+        id: uuidv4(),
         user_id: user.id,
         description,
         attachment_url: attachmentUrl,
@@ -163,6 +167,7 @@ export default function ReportIssueScreen() {
           <TouchableOpacity
             style={styles.attachmentButton}
             onPress={pickDocument}
+            activeOpacity={0.7}
           >
             <Feather name="paperclip" size={20} color="#2563eb" />
             <Text style={styles.attachmentText}>
@@ -174,6 +179,7 @@ export default function ReportIssueScreen() {
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleSubmit}
             disabled={loading}
+            activeOpacity={0.8}
           >
             {loading && (
               <ActivityIndicator color="#fff" style={{ marginRight: 8 }} />
@@ -253,7 +259,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
     paddingVertical: 16,
     borderRadius: 14,
     marginTop: 8,

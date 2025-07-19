@@ -7,14 +7,17 @@ import {
   Animated,
   Platform,
   Alert,
+  AccessibilityRole,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import i18n from "../../localization/i18n";
 import { saveLanguage } from "../../utils/storage";
 import { Picker } from "@react-native-picker/picker";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { ParamListBase } from "@react-navigation/native";
 
 interface LanguageSelectStepProps {
-  navigation: any; // You can replace with proper type if using TypeScript navigation typing
+  navigation: NativeStackNavigationProp<ParamListBase, string>;
 }
 
 export default function LanguageSelectStep({
@@ -23,7 +26,7 @@ export default function LanguageSelectStep({
   const { t } = useTranslation();
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const [selectedLang, setSelectedLang] = useState("en");
+  const [selectedLang, setSelectedLang] = useState<string>("en");
 
   const handleSelect = async () => {
     try {
@@ -33,7 +36,7 @@ export default function LanguageSelectStep({
     } catch (error) {
       console.error("Error changing language or saving:", error);
       Alert.alert(
-        t("error"),
+        t("error") || "Error",
         t("language_save_failed") || "Failed to save language."
       );
     }
@@ -42,6 +45,8 @@ export default function LanguageSelectStep({
   const animatePressIn = () => {
     Animated.spring(scaleAnim, {
       toValue: 0.95,
+      friction: 3,
+      tension: 40,
       useNativeDriver: true,
     }).start();
   };
@@ -49,14 +54,21 @@ export default function LanguageSelectStep({
   const animatePressOut = () => {
     Animated.spring(scaleAnim, {
       toValue: 1,
+      friction: 3,
+      tension: 40,
       useNativeDriver: true,
     }).start();
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t("language_prompt")}</Text>
-      <Text style={styles.subTitle}>{t("language_prompt_subtitle")}</Text>
+      <Text style={styles.title}>
+        {t("language_prompt") || "Select Language"}
+      </Text>
+      <Text style={styles.subTitle}>
+        {t("language_prompt_subtitle") ||
+          "Choose your preferred language for the app interface."}
+      </Text>
 
       <View style={styles.dropdownContainer}>
         <Picker
@@ -65,6 +77,9 @@ export default function LanguageSelectStep({
           mode="dropdown"
           style={styles.picker}
           itemStyle={styles.pickerItem}
+          accessibilityLabel={t("language_picker_label") || "Language picker"}
+          accessibilityRole={"adjustable" as AccessibilityRole}
+          dropdownIconColor="#1e3a8a"
         >
           <Picker.Item label="English" value="en" />
           <Picker.Item label="Kpelle" value="kpelle" />
@@ -88,6 +103,7 @@ export default function LanguageSelectStep({
           activeOpacity={0.85}
           onPressIn={animatePressIn}
           onPressOut={animatePressOut}
+          accessibilityRole="button"
           accessibilityLabel={
             t("proceed_with_language") || "Proceed with selected language"
           }

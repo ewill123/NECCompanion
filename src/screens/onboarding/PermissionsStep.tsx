@@ -10,15 +10,11 @@ import {
   Platform,
 } from "react-native";
 import * as Location from "expo-location";
-import * as Notifications from "expo-notifications";
 import { saveOnboardingComplete } from "../../utils/storage";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 
 export default function PermissionsStep({ navigation }: { navigation: any }) {
   const [hasLocationPermission, setHasLocationPermission] = useState<
-    boolean | null
-  >(null);
-  const [hasNotificationPermission, setHasNotificationPermission] = useState<
     boolean | null
   >(null);
   const [loading, setLoading] = useState(false);
@@ -40,28 +36,24 @@ export default function PermissionsStep({ navigation }: { navigation: any }) {
         await Location.requestForegroundPermissionsAsync();
       setHasLocationPermission(locationStatus === "granted");
 
-      const { status: notificationStatus } =
-        await Notifications.requestPermissionsAsync();
-      setHasNotificationPermission(notificationStatus === "granted");
-
-      if (locationStatus !== "granted" || notificationStatus !== "granted") {
+      if (locationStatus !== "granted") {
         Alert.alert(
-          "Permissions Required",
-          "Please allow both permissions to continue."
+          "Location Permission Required",
+          "Please allow location access to continue."
         );
       }
     } catch (err) {
-      Alert.alert("Error", "Unable to request permissions. Try again.");
+      Alert.alert("Error", "Unable to request location permission. Try again.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleFinish = async () => {
-    if (!hasLocationPermission || !hasNotificationPermission) {
+    if (!hasLocationPermission) {
       Alert.alert(
-        "Permissions Incomplete",
-        "You need to allow both permissions to continue."
+        "Permission Required",
+        "You must allow location access to continue."
       );
       return;
     }
@@ -105,9 +97,9 @@ export default function PermissionsStep({ navigation }: { navigation: any }) {
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <Text style={styles.title}>Permissions Required</Text>
+      <Text style={styles.title}>Location Permission</Text>
       <Text style={styles.subTitle}>
-        We need a few permissions to give you the best experience.
+        We need your location to show relevant election info.
       </Text>
 
       {renderPermissionStatus(
@@ -115,22 +107,14 @@ export default function PermissionsStep({ navigation }: { navigation: any }) {
         "Location",
         "location-outline"
       )}
-      {renderPermissionStatus(
-        hasNotificationPermission,
-        "Notifications",
-        "notifications-outline"
-      )}
 
       <TouchableOpacity
         style={[
           styles.continueButton,
-          !(hasLocationPermission && hasNotificationPermission) &&
-            styles.buttonDisabled,
+          !hasLocationPermission && styles.buttonDisabled,
         ]}
         onPress={handleFinish}
-        disabled={
-          !hasLocationPermission || !hasNotificationPermission || loading
-        }
+        disabled={!hasLocationPermission || loading}
         activeOpacity={0.85}
       >
         {loading ? (

@@ -12,14 +12,29 @@ import {
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import * as Speech from "expo-speech";
+import Svg, { Path, SvgProps } from "react-native-svg";
 
 const { width } = Dimensions.get("window");
 
-// SVG Speaker Icon (custom, professional)
-import Svg, { Path } from "react-native-svg";
+interface IconProps extends SvgProps {
+  color?: string;
+  size?: number;
+}
 
-const SpeakerIcon = ({ color = "#1e40af", size = 24 }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+const SpeakerIcon: React.FC<IconProps> = ({
+  color = "#1e40af",
+  size = 24,
+  ...props
+}) => (
+  <Svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    accessibilityLabel="Speaker icon"
+    accessible={true}
+    {...props}
+  >
     <Path
       d="M5 9v6h4l5 5V4L9 9H5z"
       stroke={color}
@@ -47,9 +62,20 @@ const SpeakerIcon = ({ color = "#1e40af", size = 24 }) => (
   </Svg>
 );
 
-// SVG Arrow Icon (next button)
-const ArrowRightIcon = ({ color = "#fff", size = 24 }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+const ArrowRightIcon: React.FC<IconProps> = ({
+  color = "#fff",
+  size = 24,
+  ...props
+}) => (
+  <Svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    accessibilityLabel="Next arrow icon"
+    accessible={true}
+    {...props}
+  >
     <Path
       d="M9 18l6-6-6-6"
       stroke={color}
@@ -64,12 +90,10 @@ const ArrowRightIcon = ({ color = "#fff", size = 24 }) => (
 export default function WelcomeStep({ navigation }: { navigation: any }) {
   const { t } = useTranslation();
 
-  // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
   const [isSpeaking, setIsSpeaking] = useState(false);
 
-  // Animate fade + slide up on mount
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -85,25 +109,33 @@ export default function WelcomeStep({ navigation }: { navigation: any }) {
     ]).start();
   }, [fadeAnim, slideAnim]);
 
-  // Handle speech with loading state and accessibility announcement
   const handleSpeak = () => {
     if (isSpeaking) {
       Speech.stop();
       setIsSpeaking(false);
       return;
     }
-    setIsSpeaking(true);
-    Speech.speak(t("intro"), {
-      onDone: () => setIsSpeaking(false),
-      onStopped: () => setIsSpeaking(false),
-    });
 
-    if (Platform.OS === "android" || Platform.OS === "ios") {
-      AccessibilityInfo.announceForAccessibility(t("intro"));
+    try {
+      setIsSpeaking(true);
+      Speech.speak(t("intro"), {
+        onDone: () => setIsSpeaking(false),
+        onStopped: () => setIsSpeaking(false),
+        onError: () => {
+          setIsSpeaking(false);
+          // Optional: show alert or toast about TTS error
+        },
+      });
+
+      if (Platform.OS === "android" || Platform.OS === "ios") {
+        AccessibilityInfo.announceForAccessibility(t("intro"));
+      }
+    } catch (error) {
+      setIsSpeaking(false);
+      console.error("Speech error:", error);
     }
   };
 
-  // Button press animations
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const onPressIn = () => {
     Animated.spring(scaleAnim, {
@@ -124,10 +156,8 @@ export default function WelcomeStep({ navigation }: { navigation: any }) {
 
   return (
     <View style={styles.outerContainer} accessible>
-      {/* Background gradient + subtle abstract shape */}
       <View style={styles.backgroundShape} />
 
-      {/* Animated content container */}
       <Animated.View
         style={[
           styles.container,
@@ -137,7 +167,6 @@ export default function WelcomeStep({ navigation }: { navigation: any }) {
           },
         ]}
       >
-        {/* Logo Image */}
         <View
           accessible
           accessibilityLabel="NEC Logo"
@@ -151,19 +180,12 @@ export default function WelcomeStep({ navigation }: { navigation: any }) {
           />
         </View>
 
-        {/* Header text */}
-        <Text
-          style={styles.title}
-          accessibilityRole="header"
-          // Removed accessibilityLevel, it's invalid in React Native
-        >
+        <Text style={styles.title} accessibilityRole="header">
           {t("welcome")}
         </Text>
 
-        {/* Description / intro */}
         <Text style={styles.introText}>{t("intro")}</Text>
 
-        {/* Read Aloud Button */}
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={handleSpeak}
@@ -183,12 +205,11 @@ export default function WelcomeStep({ navigation }: { navigation: any }) {
             ]}
           >
             {isSpeaking
-              ? t("stop_reading") || "Stop Reading"
-              : t("read_aloud") || "Read Aloud"}
+              ? t("stop_reading") ?? "Stop Reading"
+              : t("read_aloud") ?? "Read Aloud"}
           </Text>
         </TouchableOpacity>
 
-        {/* Next Button */}
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
           <TouchableOpacity
             activeOpacity={0.85}
@@ -258,7 +279,11 @@ const styles = StyleSheet.create({
     color: "#1e40af",
     textAlign: "center",
     marginBottom: 12,
-    fontFamily: Platform.OS === "ios" ? "HelveticaNeue-Bold" : "Roboto",
+    fontFamily: Platform.select({
+      ios: "HelveticaNeue-Bold",
+      android: "Roboto",
+      default: "System",
+    }),
   },
   introText: {
     fontSize: 17,
@@ -266,12 +291,16 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 26,
     marginBottom: 32,
-    fontFamily: Platform.OS === "ios" ? "HelveticaNeue" : "Roboto",
+    fontFamily: Platform.select({
+      ios: "HelveticaNeue",
+      android: "Roboto",
+      default: "System",
+    }),
   },
   speakButton: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    marginBottom: 48,
     backgroundColor: "#dbeafe",
     paddingVertical: 14,
     paddingHorizontal: 28,
@@ -281,7 +310,6 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 5 },
     elevation: 10,
-    marginBottom: 48,
   },
   speakButtonActive: {
     backgroundColor: "#bfdbfe",
@@ -291,6 +319,7 @@ const styles = StyleSheet.create({
     color: "#1e40af",
     fontWeight: "700",
     fontSize: 18,
+    marginLeft: 10,
   },
   speakButtonTextActive: {
     color: "#1e3a8a",
@@ -303,17 +332,17 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     alignItems: "center",
     justifyContent: "center",
-    gap: 14,
+    elevation: 15,
     shadowColor: "#2563eb",
     shadowOpacity: 0.75,
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 10 },
-    elevation: 15,
   },
   nextButtonText: {
     fontSize: 22,
     fontWeight: "800",
     color: "#fff",
     letterSpacing: 1,
+    marginRight: 14,
   },
 });

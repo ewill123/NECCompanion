@@ -29,45 +29,46 @@ export default function SignUpScreen({ navigation }: any) {
 
     setLoading(true);
 
-    // Sign up user with Supabase auth
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-    if (error) {
-      setLoading(false);
-      Alert.alert("Signup Failed", error.message);
-      return;
-    }
+      if (error) throw error;
 
-    const userId = data.user?.id;
-    if (userId) {
-      // Insert profile data into your lowercase "appusers" table
-      const { error: profileError } = await supabase.from("appusers").insert([
-        {
-          id: userId,
-          full_name: fullName,
-          phone,
-          email,
-          created_at: new Date().toISOString(), // optional but recommended
-        },
-      ]);
-
-      if (profileError) {
-        console.error("Profile insert error:", profileError);
-        Alert.alert("Error", "Failed to save user profile.");
-        setLoading(false);
-        return;
+      const userId = data.user?.id;
+      if (userId) {
+        const { error: profileError } = await supabase.from("appusers").insert([
+          {
+            id: userId,
+            full_name: fullName,
+            phone,
+            email,
+            created_at: new Date().toISOString(),
+          },
+        ]);
+        if (profileError) {
+          console.error("Profile insert error:", profileError);
+          Alert.alert("Error", "Failed to save user profile.");
+          setLoading(false);
+          return;
+        }
       }
-    }
 
-    setLoading(false);
-    Alert.alert(
-      "Success",
-      "Account created successfully! Please check your email to confirm your account."
-    );
-    navigation.replace("SignIn"); // Navigate to SignIn screen
+      Alert.alert(
+        "Success",
+        "Account created successfully! Please check your email to confirm your account."
+      );
+      navigation.replace("SignIn");
+    } catch (error: any) {
+      Alert.alert(
+        "Signup Failed",
+        error.message || "An unexpected error occurred."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

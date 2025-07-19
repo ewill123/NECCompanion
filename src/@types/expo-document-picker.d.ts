@@ -1,12 +1,24 @@
 declare module "expo-document-picker" {
-  export function getDocumentAsync(options?: {
+  export interface DocumentPickerOptions {
     type?: string | string[];
     multiple?: boolean;
     copyToCacheDirectory?: boolean;
-  }): Promise<{
-    type: "success" | "cancel";
+  }
+
+  export interface DocumentResultSuccess {
+    type: "success";
     uri: string;
     name: string;
     size?: number;
-  }>;
+  }
+
+  export interface DocumentResultCancel {
+    type: "cancel";
+  }
+
+  export type DocumentResult = DocumentResultSuccess | DocumentResultCancel;
+
+  export function getDocumentAsync(
+    options?: DocumentPickerOptions
+  ): Promise<DocumentResult>;
 }

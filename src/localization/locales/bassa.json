@@ -1,0 +1,11 @@
+{
+  "welcome": "Welcome (Bassa)",
+  "intro": "Your trusted election app (Bassa)",
+  "next": "Next",
+  "language_prompt": "Select Your Language",
+  "language_prompt_subtitle": "Choose the language you understand best.",
+  "submit": "Submit",
+  "thank_you": "Thank you",
+  "error": "Error",
+  "fill_required_fields": "Please complete all fields."
+}

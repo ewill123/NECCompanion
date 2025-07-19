@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, View, StyleSheet } from "react-native";
+import { ActivityIndicator, View, StyleSheet, Text } from "react-native";
 import "./localization/i18n";
 import i18n from "./localization/i18n";
 
@@ -7,7 +7,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { AuthProvider } from "./context/AuthContext";
-import { AppConfigProvider } from "./AppConfigContext"; // <--- import here
+import { AppConfigProvider } from "./AppConfigContext";
 
 import WelcomeStep from "./screens/onboarding/WelcomeStep";
 import LanguageSelectStep from "./screens/onboarding/LanguageSelectStep";
@@ -51,6 +51,7 @@ export default function App() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#007AFF" />
+        <Text>Loading settings...</Text>
       </View>
     );
   }
@@ -63,40 +64,33 @@ export default function App() {
             initialRouteName={initialRoute}
             screenOptions={{ headerShown: true }}
           >
-            <>
-              {/* Onboarding screens */}
-              <Stack.Screen name="Welcome" component={WelcomeStep} />
-              <Stack.Screen
-                name="LanguageSelect"
-                component={LanguageSelectStep}
-              />
-              <Stack.Screen name="Permissions" component={PermissionsStep} />
-
-              {/* Authentication */}
-              <Stack.Screen
-                name="SignIn"
-                component={SignInScreen}
-                options={{ title: "Sign In" }}
-              />
-              <Stack.Screen
-                name="SignUp"
-                component={SignUpScreen}
-                options={{ title: "Sign Up" }}
-              />
-
-              {/* Main app screens */}
-              <Stack.Screen name="Home" component={HomeScreen} />
-              <Stack.Screen name="Education" component={EducationScreen} />
-              <Stack.Screen name="ReportIssue" component={ReportIssueScreen} />
-              <Stack.Screen
-                name="PollingCenters"
-                component={PollingCentersScreen}
-              />
-              <Stack.Screen
-                name="KnowCandidate"
-                component={KnowCandidateScreen}
-              />
-            </>
+            <Stack.Screen name="Welcome" component={WelcomeStep} />
+            <Stack.Screen
+              name="LanguageSelect"
+              component={LanguageSelectStep}
+            />
+            <Stack.Screen name="Permissions" component={PermissionsStep} />
+            <Stack.Screen
+              name="SignIn"
+              component={SignInScreen}
+              options={{ title: "Sign In" }}
+            />
+            <Stack.Screen
+              name="SignUp"
+              component={SignUpScreen}
+              options={{ title: "Sign Up" }}
+            />
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Education" component={EducationScreen} />
+            <Stack.Screen name="ReportIssue" component={ReportIssueScreen} />
+            <Stack.Screen
+              name="PollingCenters"
+              component={PollingCentersScreen}
+            />
+            <Stack.Screen
+              name="KnowCandidate"
+              component={KnowCandidateScreen}
+            />
           </Stack.Navigator>
         </NavigationContainer>
       </AuthProvider>

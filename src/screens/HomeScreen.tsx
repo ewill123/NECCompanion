@@ -9,16 +9,15 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
+  Linking,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import Entypo from "react-native-vector-icons/Entypo";
-
 import { AppConfigContext } from "../AppConfigContext";
 import { saveOnboardingComplete } from "../utils/storage";
 import { supabase } from "../services/supabaseClient";
-
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 type RootStackParamList = {
@@ -48,26 +47,20 @@ interface AppConfigs {
   [key: string]: string | undefined;
 }
 
-interface NewsItem {
-  id: number;
-  title?: string;
-  description?: string;
-  created_at?: string;
-}
-
 const COLORS = {
-  background: "#F4F4F7", // Soft modern background
-  primary: "#0C4A6E", // NEC Blue
-  accent: "#E11D48", // NEC Red
-  cube1: "#FDF6EC", // Light pastel orange
-  cube2: "#EAF4FC", // Light pastel blue
-  cube3: "#F0F9F4", // Light pastel green
-  cube4: "#FFF1F2", // Light pink
-  textDark: "#1E293B",
-  textSoft: "#64748B",
+  background: "#F4F4F7",
+  primary: "#0C4A6E",
+  accent: "#E11D48",
+  cube1: "#ffc574ff",
+  cube2: "#85c8ffff",
+  cube3: "#6afcacff",
+  cube4: "#ffacb1ff",
+  textDark: "#141e2eff",
+  textSoft: "#53647dff",
   white: "#FFFFFF",
-  highlight: "#173681ff",
+  highlight: "#112147ff",
   cardShadow: "#000000",
+  whatsapp: "#25D366",
 };
 
 const mockUserName = "Emmanuel";
@@ -89,76 +82,8 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
   const daysLeft =
     electionDate != null
-      ? Math.ceil(
-          (electionDate.getTime() - new Date().getTime()) /
-            (1000 * 60 * 60 * 24)
-        )
+      ? Math.ceil((electionDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
       : null;
-
-  // Animated value for FAB float
-  const floatAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    async function fetchNews() {
-      setNewsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from<"news", NewsItem>("news")
-          .select("id, title, description, created_at")
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-          const newsStrings = data.map(
-            (item) =>
-              (item.title ?? "") +
-              (item.description ? ` - ${item.description}` : "")
-          );
-          setNewsItems(newsStrings);
-          setNewsIndex(0);
-        } else {
-          setNewsItems([]);
-        }
-      } catch (error) {
-        console.error("Error loading news:", error);
-        setNewsItems([]);
-      } finally {
-        setNewsLoading(false);
-      }
-    }
-
-    fetchNews();
-
-    // Start FAB float animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatAnim, {
-          toValue: -8,
-          duration: 1500,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatAnim, {
-          toValue: 0,
-          duration: 1500,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, [floatAnim]);
-
-  const handleNextNews = () => {
-    setNewsIndex((prev) =>
-      newsItems.length ? (prev + 1) % newsItems.length : 0
-    );
-  };
-
-  const handleResetOnboarding = async () => {
-    await saveOnboardingComplete();
-    navigation.reset({ index: 0, routes: [{ name: "Welcome" }] });
-  };
 
   const actionCards = [
     {
@@ -199,6 +124,80 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     },
   ];
 
+  const cardScales = useRef(
+    actionCards.map(() => new Animated.Value(1))
+  ).current;
+
+  useEffect(() => {
+    cardScales.forEach((anim) => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(anim, {
+            toValue: 1.03,
+            duration: 1200,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: 1200,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    });
+  }, [cardScales]);
+
+  useEffect(() => {
+    async function fetchNews() {
+      setNewsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("news")
+          .select("id, title, description, created_at")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (data && data.length) {
+          const newsStrings = data.map(
+            (item) =>
+              `${item.title ?? ""}${
+                item.description ? ` - ${item.description}` : ""
+              }`
+          );
+          setNewsItems(newsStrings);
+          setNewsIndex(0);
+        } else {
+          setNewsItems([]);
+        }
+      } catch (error) {
+        console.error("Error loading news:", error);
+        setNewsItems([]);
+      } finally {
+        setNewsLoading(false);
+      }
+    }
+
+    fetchNews();
+  }, []);
+
+  const handleResetOnboarding = async () => {
+    await saveOnboardingComplete();
+    navigation.reset({ index: 0, routes: [{ name: "Welcome" }] });
+  };
+
+  const handleNextNews = () => {
+    setNewsIndex((prev) =>
+      newsItems.length ? (prev + 1) % newsItems.length : 0
+    );
+  };
+
+  const handleWhatsAppContact = () => {
+    Linking.openURL("https://wa.me/231880575207"); // NEC hotline number
+  };
+
   if (configsLoading || newsLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -211,12 +210,9 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.background }}>
+    <View style={[styles.container, { backgroundColor: COLORS.background }]}>
       <View style={styles.topBar}>
-        <TouchableOpacity
-          onPress={handleResetOnboarding}
-          accessibilityLabel="Logout"
-        >
+        <TouchableOpacity onPress={handleResetOnboarding}>
           <MaterialIcons name="logout" size={24} color={COLORS.white} />
         </TouchableOpacity>
 
@@ -295,7 +291,6 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             <TouchableOpacity
               onPress={handleNextNews}
               style={styles.nextButton}
-              accessibilityLabel="Next news"
             >
               <MaterialIcons
                 name="navigate-next"
@@ -307,17 +302,26 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         </View>
 
         <View style={styles.grid}>
-          {actionCards.map(({ id, icon, label, bg, textColor, onPress }) => (
-            <TouchableOpacity
-              key={id}
-              onPress={onPress}
-              style={[styles.card, { backgroundColor: bg }]}
+          {actionCards.map((card, index) => (
+            <Animated.View
+              key={card.id}
+              style={{
+                transform: [{ scale: cardScales[index] }],
+                width: "48%",
+                marginBottom: 16,
+              }}
             >
-              {icon}
-              <Text style={[styles.cardText, { color: textColor }]}>
-                {label}
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={card.onPress}
+                activeOpacity={0.85}
+                style={[styles.card, { backgroundColor: card.bg }]}
+              >
+                {card.icon}
+                <Text style={[styles.cardText, { color: card.textColor }]}>
+                  {card.label}
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
           ))}
         </View>
 
@@ -326,16 +330,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         </View>
       </ScrollView>
 
-      {/* Floating Animated FAB */}
       <Animated.View
-        style={[styles.fab, { transform: [{ translateY: floatAnim }] }]}
+        style={[
+          styles.fab,
+          { backgroundColor: COLORS.whatsapp, transform: [{ translateY: -4 }] },
+        ]}
       >
-        <TouchableOpacity
-          onPress={() => navigation.navigate("ReportIssue")}
-          accessibilityLabel="Report an Issue"
-          activeOpacity={0.8}
-        >
-          <Entypo name="plus" size={26} color={COLORS.white} />
+        <TouchableOpacity onPress={handleWhatsAppContact} activeOpacity={0.8}>
+          <FontAwesome5 name="whatsapp" size={26} color={COLORS.white} />
         </TouchableOpacity>
       </Animated.View>
     </View>
@@ -343,6 +345,9 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   topBar: {
     height: 70,
     paddingHorizontal: 20,
@@ -384,13 +389,14 @@ const styles = StyleSheet.create({
   },
   countdownCard: {
     width: "100%",
-    backgroundColor: "#FFF3C4",
+    backgroundColor: "#0C4A6E",
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderColor: "#FCD34D",
     borderWidth: 1,
   },
+
   iconRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -398,11 +404,11 @@ const styles = StyleSheet.create({
   countdownTitle: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#92400E",
+    color: "#ffffffff",
   },
   countdownSub: {
     fontSize: 14,
-    color: "#78350F",
+    color: "#ffffffff",
     marginTop: 4,
   },
   heroImage: {
@@ -421,7 +427,7 @@ const styles = StyleSheet.create({
     width: "100%",
     padding: 16,
     borderRadius: 16,
-    backgroundColor: "#FFF8E1",
+    backgroundColor: "#42a5e6ff",
     borderColor: COLORS.highlight,
     borderWidth: 1,
     marginBottom: 30,
@@ -452,19 +458,17 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   card: {
-    width: "48%",
     aspectRatio: 1,
-    borderRadius: 18,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
-    padding: 12,
-    marginBottom: 16,
+    padding: 16,
     backgroundColor: COLORS.white,
     shadowColor: COLORS.cardShadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
   },
   cardText: {
     marginTop: 10,
@@ -495,7 +499,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: COLORS.accent,
     justifyContent: "center",
     alignItems: "center",
     elevation: 6,

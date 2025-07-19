@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 
 interface Candidate {
@@ -22,12 +23,13 @@ export default function KnowCandidateScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchCandidates = async () => {
+  const fetchCandidates = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch(
         "https://randomuser.me/api/?results=5&nat=us,gb,ca"
       );
+      if (!res.ok) throw new Error("Network response was not ok");
       const data = await res.json();
       const formatted: Candidate[] = data.results.map((user: any) => ({
         id: user.login.uuid,
@@ -38,16 +40,20 @@ export default function KnowCandidateScreen() {
       setCandidates(formatted);
     } catch (error) {
       console.warn("Failed to load candidates.", error);
+      Alert.alert(
+        "Error",
+        "Failed to load candidates. Please check your internet connection."
+      );
       setCandidates([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchCandidates();
-  }, []);
+  }, [fetchCandidates]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -73,6 +79,22 @@ export default function KnowCandidateScreen() {
     );
   }
 
+  const renderCandidate = ({ item }: { item: Candidate }) => (
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.8}
+      onPress={() =>
+        Alert.alert("Candidate Selected", `${item.name} from ${item.location}`)
+      }
+    >
+      <Image source={{ uri: item.imageUrl }} style={styles.image} />
+      <View style={styles.textContainer}>
+        <Text style={styles.name}>{item.name}</Text>
+        <Text style={styles.location}>{item.location}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <FlatList
       data={candidates}
@@ -81,15 +103,9 @@ export default function KnowCandidateScreen() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
       contentContainerStyle={styles.listContainer}
-      renderItem={({ item }) => (
-        <TouchableOpacity style={styles.card} activeOpacity={0.8}>
-          <Image source={{ uri: item.imageUrl }} style={styles.image} />
-          <View style={styles.textContainer}>
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.location}>{item.location}</Text>
-          </View>
-        </TouchableOpacity>
-      )}
+      renderItem={renderCandidate}
+      showsVerticalScrollIndicator={false}
+      ListFooterComponent={<View style={{ height: 24 }} />}
     />
   );
 }
@@ -113,6 +129,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     padding: 20,
+    paddingBottom: 40,
   },
   card: {
     flexDirection: "row",

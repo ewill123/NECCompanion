@@ -1,8 +1,27 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  GestureResponderEvent,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
-export default function OnboardingScreen({ navigation }: any) {
+type RootStackParamList = {
+  Onboarding: undefined;
+  Home: undefined;
+  // add other screens if needed
+};
+
+type Props = NativeStackScreenProps<RootStackParamList, "Onboarding">;
+
+export default function OnboardingScreen({ navigation }: Props) {
+  const handleGetStarted = (event: GestureResponderEvent) => {
+    navigation.navigate("Home");
+  };
+
   return (
     <LinearGradient
       colors={["#4c669f", "#3b5998", "#192f6a"]}
@@ -21,7 +40,7 @@ export default function OnboardingScreen({ navigation }: any) {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => navigation.navigate("Home")} // adjust navigation
+          onPress={handleGetStarted}
           activeOpacity={0.8}
         >
           <Text style={styles.buttonText}>Get Started</Text>
